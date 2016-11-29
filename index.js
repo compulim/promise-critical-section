@@ -1,13 +1,14 @@
 'use strict';
 
 class CriticalSection {
-  constructor() {
+  constructor(options = { Promise: Promise }) {
     this._busy = false;
+    this._options = options;
     this._queue = [];
   }
 
   enter() {
-    return new Promise(resolve => {
+    return new (this._options.Promise)(resolve => {
       this._queue.push(resolve);
 
       if (!this._busy) {
