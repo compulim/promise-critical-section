@@ -2,11 +2,18 @@
 
 const assert = require('assert');
 const CriticalSection = require('../index');
+const ReleaseCounter = require('./releaseCounter');
 
 let currentTime = 0;
 
 function getTime() {
   return currentTime++;
+}
+
+function delay(interval = 0) {
+  return new Promise(resolve => {
+    setTimeout(resolve, interval);
+  });
 }
 
 describe('CriticalSection using async', () => {
@@ -29,25 +36,31 @@ describe('CriticalSection using async', () => {
   });
 
   context('enter twice simultaneously', () => {
-    let worker;
+    let counter;
     let section;
+    let worker;
 
     beforeEach(() => {
-      worker = [];
+      counter = new ReleaseCounter();
       section = new CriticalSection();
+      worker = [];
 
       return Promise.all([
         (async () => {
+          await counter.waitFor(0); // make sure this op enter first
           await section.enter();
+          await counter.waitFor(3); // make sure 1 and 2 are blocking enter
           worker[0] = getTime();
           await section.leave();
         })(),
         (async () => {
+          await counter.waitFor(1);
           await section.enter();
           worker[1] = getTime();
           await section.leave();
         })(),
         (async () => {
+          await counter.waitFor(2);
           await section.enter();
           worker[2] = getTime();
           await section.leave();
@@ -79,5 +92,71 @@ describe('CriticalSection using async', () => {
 
     it('should have entered twice',                     () => assert.equal(2, worker.length));
     it('should let worker 1 enter first then worker 2', () => assert(worker[0] < worker[1]));
+  });
+
+  context('only one operation can enter', () => {
+    let counter;
+    let log;
+    let section;
+
+    beforeEach(async () => {
+      counter = new ReleaseCounter();
+      log = '';
+      section = new CriticalSection();
+
+      return Promise.all([
+        (async () => {
+          await section.enter();
+          await counter.waitFor(0); // make sure this op enter first
+          log += 'E1';
+          await counter.waitFor(2); // make sure 1 is blocking on enter
+          log += 'L1';
+          await section.leave();
+        })(),
+        (async () => {
+          await counter.waitFor(1); // make sure 1 is in the block
+          assert.equal('E1', log);
+          await section.enter();
+          assert.equal('E1L1', log);
+          log += 'E2';
+          log += 'L2';
+          await section.leave();
+        })()
+      ]);
+    });
+
+    it('should allow only one operation at a time', () => assert.equal(log, 'E1L1E2L2'));
+  });
+
+  context('race condition', () => {
+    const numRaces = 100;
+    let logs;
+    let section;
+
+    beforeEach(async () => {
+      logs = [];
+      section = new CriticalSection();
+
+      const tasks = [];
+
+      for (let i = 0; i < numRaces; i++) {
+        tasks.push(async () => {
+          await section.enter();
+          logs.push(`E${ i }`);
+          await delay(1);
+          logs.push(`L${ i }`);
+          await section.leave();
+        });
+      }
+
+      return Promise.all(tasks.map(task => task()));
+    });
+
+    it('should allow only one operation at a time', () => {
+      for (let i = 0; i < numRaces; i++) {
+        assert(logs[i * 2] === `E${ i }`);
+        assert(logs[i * 2 + 1] === `L${ i }`);
+      }
+    });
   });
 });

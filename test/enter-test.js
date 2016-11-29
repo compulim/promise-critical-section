@@ -9,6 +9,12 @@ function getTime() {
   return currentTime++;
 }
 
+function delay(interval = 0) {
+  return new Promise(resolve => {
+    setTimeout(resolve, interval);
+  });
+}
+
 describe('CriticalSection', () => {
   context('single enter', () => {
     let entered;
@@ -36,6 +42,7 @@ describe('CriticalSection', () => {
 
       return Promise.all([
         section.enter()
+          .then(() => delay())
           .then(() => worker[0] = getTime())
           .then(() => section.leave()),
         section.enter()
@@ -50,25 +57,5 @@ describe('CriticalSection', () => {
     it('should have entered 3 times',                   () => assert.equal(3, worker.length));
     it('should let worker 1 enter first then worker 2', () => assert(worker[0] < worker[1]));
     it('should let worker 2 enter first then worker 3', () => assert(worker[1] < worker[2]));
-  });
-
-  context('enter twice in serial', () => {
-    let worker;
-    let section;
-
-    beforeEach(() => {
-      worker = [];
-      section = new CriticalSection();
-
-      return section.enter()
-        .then(() => worker[0] = getTime())
-        .then(() => section.leave())
-        .then(() => section.enter())
-        .then(() => worker[1] = getTime())
-        .then(() => section.leave());
-    });
-
-    it('should have entered twice',                     () => assert.equal(2, worker.length));
-    it('should let worker 1 enter first then worker 2', () => assert(worker[0] < worker[1]));
   });
 });
