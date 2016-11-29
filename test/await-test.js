@@ -37,24 +37,21 @@ describe('CriticalSection using async', () => {
       section = new CriticalSection();
 
       return Promise.all([
-        new Promise(async (resolve) => {
+        (async () => {
           await section.enter();
           worker[0] = getTime();
           await section.leave();
-          resolve();
-        }),
-        new Promise(async (resolve) => {
+        })(),
+        (async () => {
           await section.enter();
           worker[1] = getTime();
           await section.leave();
-          resolve();
-        }),
-        new Promise(async (resolve) => {
+        })(),
+        (async () => {
           await section.enter();
           worker[2] = getTime();
           await section.leave();
-          resolve();
-        })
+        })()
       ]);
     });
 

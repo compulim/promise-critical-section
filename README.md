@@ -41,24 +41,17 @@ You can also write it with ES7 async/await. The following example maybe a bit ex
 
 ```js
 return Promise.all([
-  new Promise(async (resolve) => {
+  (async () => {
     await section.enter();
-    worker[0] = getTime();
+    console.log('Step 1A');
+    console.log('Step 1B');
     await section.leave();
-    resolve();
-  }),
-  new Promise(async (resolve) => {
+  })(),
+  (async () => {
     await section.enter();
-    worker[1] = getTime();
+    console.log('Step 2');
     await section.leave();
-    resolve();
-  }),
-  new Promise(async (resolve) => {
-    await section.enter();
-    worker[2] = getTime();
-    await section.leave();
-    resolve();
-  })
+  })()
 ]);
 ```
 
