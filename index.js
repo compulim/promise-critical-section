@@ -8,9 +8,7 @@ class CriticalSection {
 
   enter() {
     if (this._busy || this._queue.length) {
-      const promise = new Promise(resolve => this._queue.push(resolve));
-
-      return promise;
+      return new Promise(resolve => this._queue.push(resolve));
     } else {
       this._busy = true;
 
