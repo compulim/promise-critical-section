@@ -1,10 +1,13 @@
-# 0.0.2
-## 2016-11-30
+# 0.0.2 (2016-11-30)
 
-* Guard against slow Promise implementation
-  * Slow Promise is Promise function getting called after the Promise object is instantiated
+## Features
 
-# 0.0.1
-## 2016-11-29
+* Allows custom Promise implementation
+* Guards against slow Promise implementation
+  * Slow Promise is Promise function getting called shortly after the Promise object is instantiated
+
+# 0.0.1 (2016-11-29)
+
+## Features
 
 * Initial commit
