@@ -7,13 +7,14 @@ class CriticalSection {
   }
 
   enter() {
-    if (this._busy || this._queue.length) {
-      return new Promise(resolve => this._queue.push(resolve));
-    } else {
-      this._busy = true;
+    return new Promise(resolve => {
+      this._queue.push(resolve);
 
-      return Promise.resolve();
-    }
+      if (!this._busy) {
+        this._busy = true;
+        this._queue.shift()();
+      }
+    });
   }
 
   leave() {
