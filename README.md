@@ -1,10 +1,11 @@
 # promise-critical-section
 
-Allows only one asynchronous operation to run every time.
+Allows only one asynchronous operation to run at a time.
 
 Although JavaScript is single-threaded, there are times you may want to limit number of asynchronous operation to enter a block simultaneously. For example,
+
 * Pooling a single resource
-* Running a series of asynchronous steps one-by-one
+* Running a series of asynchronous steps without interruptions
 
 ## How to use
 
