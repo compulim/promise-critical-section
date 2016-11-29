@@ -1,5 +1,4 @@
-promise-critical-section
-========================
+# promise-critical-section
 
 Allows only one asynchronous operation to run every time.
 
@@ -7,8 +6,7 @@ Although JavaScript is single-threaded, there are times you may want to limit nu
 * Pooling a single resource
 * Running a series of asynchronous steps one-by-one
 
-How to use
-----------
+## How to use
 
 In the code below, `Step 1A` and `Step 1B` will be run serially regardless of race condition from `Step 2`.
 
@@ -55,8 +53,8 @@ return Promise.all([
 ]);
 ```
 
-Contributions
--------------
+## Contributions
+
 Like us? Please [star](star) us or give us [suggestions](issues).
 
 Please file an [issue](issues) to us with minimal repro.
