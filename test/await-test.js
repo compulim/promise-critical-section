@@ -159,4 +159,46 @@ describe('CriticalSection using async', () => {
       }
     });
   });
+
+  context('slow promise', () => {
+    let log;
+    let section;
+
+    beforeEach(() => {
+      log = '';
+      section = new CriticalSection({ Promise: SlowPromise });
+
+      return Promise.all([
+        (async () => {
+          await section.enter();
+          log += 'E1';
+          log += 'L1';
+          await section.leave();
+        })(),
+        (async () => {
+          await section.enter();
+          log += 'E2';
+          log += 'L2';
+          await section.leave();
+        })()
+      ]);
+    });
+
+    it('should enter in correct order', () => {
+      assert.equal('E1L1E2L2', log);
+    });
+  });
 });
+
+class SlowPromise {
+  constructor(fn) {
+    return new Promise((resolve, reject) => {
+      setImmediate(() => {
+        fn(resolve, reject);
+      });
+    });
+  }
+}
+
+SlowPromise.resolve = result => Promise.resolve(result);
+SlowPromise.reject = error => Promise.reject(error);
